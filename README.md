@@ -42,17 +42,5 @@ Each notebook sends a rich HTML email report to configured distribution lists.
 | Timezone | America/New_York |
 | Schedule | Daily at 11 PM ET |
 
-## Repository Contents
-
-| File | Description |
-|---|---|
-| `DataPulse_Build_Prompt_Full.docx` | Full build specification prompt |
-| `notebooks/` | Databricks notebooks (coming soon) |
-
-## Status
-
-🚧 **Build in progress** — Full prompt specification complete.
-Notebooks are being developed based on the specification document.
-
 ---
 *Built for Databricks data platform monitoring and governance.*
