@@ -194,7 +194,9 @@ Create two jobs with the following settings:
 DataPulse/
 ├── notebook1_optimization.py       # NB1: Optimization Analysis
 ├── notebook2_metadata.py           # NB2: Metadata Change & Lineage
-└── README.md
+├── README.md
+├── datapulse_email1_optimization.html    # Sample Email1: Optimization Analysis
+└── datapulse_email2_metadata.html        # Sample Email2: Metadata Change & Lineage
 ```
 
 \---
