@@ -212,4 +212,3 @@ DataPulse/
 \---
 
 *Built for production Databricks data platform monitoring and governance.*
-
