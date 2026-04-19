@@ -46,21 +46,21 @@ Compares daily metadata snapshots to surface governance issues and lineage impac
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     DataPulse Suite                          │
-│                                                              │
+│                     DataPulse Suite                         │
+│                                                             │
 │  ┌──────────────────┐        ┌──────────────────────────┐   │
-│  │   Notebook 1     │        │      Notebook 2           │   │
-│  │  Optimization    │        │  Metadata + Lineage       │   │
-│  │  Analysis        │        │  Change Notification      │   │
+│  │   Notebook 1     │        │      Notebook 2          │   │
+│  │  Optimization    │        │  Metadata + Lineage      │   │
+│  │  Analysis        │        │  Change Notification     │   │
 │  └────────┬─────────┘        └───────────┬──────────────┘   │
-│           │                              │                   │
+│           │                              │                  │
 │     ┌─────▼──────────────────────────────▼──────┐           │
-│     │         Email Notification Notebook        │           │
-│     └────────────────────────────────────────────┘           │
-│                                                              │
-│  Delta Tables:  optimization\_run\_tracker                     │
-│                 metadata\_column\_snapshot                     │
-│                 metadata\_table\_snapshot                      │
+│     │         Email Notification Notebook       │           │
+│     └───────────────────────────────────────────┘           │
+│                                                             │
+│  Delta Tables:  optimization\_run\_tracker                  │
+│                 metadata\_column\_snapshot                  │
+│                 metadata\_table\_snapshot                   │
 └─────────────────────────────────────────────────────────────┘
 ```
 
