@@ -58,9 +58,9 @@ Compares daily metadata snapshots to surface governance issues and lineage impac
 │     │         Email Notification Notebook       │           │
 │     └───────────────────────────────────────────┘           │
 │                                                             │
-│  Delta Tables:  optimization\_run\_tracker                  │
-│                 metadata\_column\_snapshot                  │
-│                 metadata\_table\_snapshot                   │
+│  Delta Tables:  optimization_run_tracker                    │
+│                 metadata_column_snapshot                    │
+│                 metadata_table_snapshot                     │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -72,15 +72,15 @@ Update the constants in **Cell 2** of each notebook before deploying:
 
 |Parameter|Value|Notes|
 |-|-|-|
-|`CATALOG`|`source\_catalog`|Unity Catalog catalog name|
-|`SCHEMAS`|`\["raw\_schema", "transform\_schema"]`|Schemas to monitor|
-|`DEST`|`target\_schema`|Where Delta tracking tables are created|
-|`EMAIL\_NB`|`/Repos/repo\_path/email\_notification\_notebook`|Shared email notebook path|
-|`REPO\_PATH`|`/Repos/repo\_path`|Repo root for notebook ID resolution|
-|`TZ`|`America/New\_York`|Timezone for all timestamps|
-|`EXCLUDED\_JOBS`|`{"UC\_ON\_DEMAND\_SYNC"}`|System jobs to skip|
-|`STALE\_DAYS`|`60`|Days before an asset is considered stale (NB1)|
-|`STALE\_DATA\_DAYS`|`7`|Days before a table's data is considered stale (NB2)|
+|`CATALOG`|`source_catalog`|Unity Catalog catalog name|
+|`SCHEMAS`|`["raw_schema", "transform_schema"]`|Schemas to monitor|
+|`DEST`|`target_schema`|Where Delta tracking tables are created|
+|`EMAIL_NB`|`/Repos/repo_path/email_notification_notebook`|Shared email notebook path|
+|`REPO_PATH`|`/Repos/repo_path`|Repo root for notebook ID resolution|
+|`TZ`|`America/New_York`|Timezone for all timestamps|
+|`EXCLUDED_JOBS`|`{"exclude_jobs_list"}`|System jobs to skip|
+|`STALE_DAYS`|`60`|Days before an asset is considered stale (NB1)|
+|`STALE_DATA\_DAYS`|`7`|Days before a table's data is considered stale (NB2)|
 
 \---
 
@@ -91,10 +91,10 @@ Update the constants in **Cell 2** of each notebook before deploying:
 Upload both `.py` files to your Databricks workspace repo:
 
 ```
-/Repos/your\_repo/DataPulse/
-├── notebook1\_optimization.py
-├── notebook2\_metadata.py
-└── email\_notification\_notebook  (shared — configure separately)
+/Repos/your_repo/DataPulse/
+├── notebook1_optimization.py
+├── notebook2_metadata.py
+└── email_notification_notebook  (shared — configure separately)
 ```
 
 ### 2\. Create Databricks Jobs
@@ -107,12 +107,12 @@ Create two jobs with the following settings:
 {
   "name": "DataPulse — Optimization Analysis",
   "schedule": {
-    "quartz\_cron\_expression": "0 0 23 \* \* ?",
-    "timezone\_id": "America/New\_York"
+    "quartz_cron_expression": "0 0 23 * * ?",
+    "timezone_id": "America/New_York"
   },
-  "parameters": \[
-    {"name": "email\_to", "default": "your-team@domain.com"},
-    {"name": "email\_cc", "default": ""}
+  "parameters": [
+    {"name": "email_to", "default": "your-team@domain.com"},
+    {"name": "email_cc", "default": ""}
   ]
 }
 ```
@@ -121,28 +121,28 @@ Create two jobs with the following settings:
 
 ```json
 {
-  "name": "DataPulse — Metadata Change \& Lineage",
+  "name": "DataPulse — Metadata Change & Lineage",
   "schedule": {
-    "quartz\_cron\_expression": "0 0 23 \* \* ?",
-    "timezone\_id": "America/New\_York"
+    "quartz_cron_expression": "0 0 23 * * ?",
+    "timezone_id": "America/New_York"
   },
-  "parameters": \[
-    {"name": "email\_to", "default": "your-team@domain.com"},
-    {"name": "email\_cc", "default": ""}
+  "parameters": [
+    {"name": "email_to", "default": "your-team@domain.com"},
+    {"name": "email_cc", "default": ""}
   ]
 }
 ```
 
-> \*\*Tip:\*\* Set `email\_to` and `email\_cc` as job parameters so distribution lists can be changed without editing notebook code.
+> \*\*Tip:\*\* Set `email_to` and `email_cc` as job parameters so distribution lists can be changed without editing notebook code.
 
 ### 3\. Required Permissions
 
 |Permission|Required For|
 |-|-|
-|`SELECT` on `information\_schema`|Table/column metadata|
-|`SELECT` on `system.access.table\_lineage`|Lineage enrichment|
+|`SELECT` on `information_schema`|Table/column metadata|
+|`SELECT` on `system.access.table_lineage`|Lineage enrichment|
 |`SELECT` on `system.access.audit`|Notebook ID resolution (Strategy 1)|
-|`WRITE` on `target\_schema`|Delta tracking/snapshot tables|
+|`WRITE` on `target_schema`|Delta tracking/snapshot tables|
 |`READ` on all monitored schemas|DESCRIBE DETAIL, DESCRIBE HISTORY|
 |Databricks Jobs API access|Job metrics and failure collection|
 |Databricks Workspace API access|Notebook path resolution|
@@ -180,7 +180,7 @@ Create two jobs with the following settings:
 |**Idempotent**|Snapshot saves DELETE today's rows first, then INSERT — safe to re-run|
 |**Gap-aware**|Tracks last successful run; extends lookback if a day is missed|
 |**90-day retention**|Old snapshots auto-deleted and compacted nightly|
-|**Parameterised**|`email\_to` / `email\_cc` overrideable per job run via widgets|
+|**Parameterised**|`email_to` / `email_cc` overrideable per job run via widgets|
 |**No ORDER BY on cache**|Skips unnecessary sort stage on cached DataFrames|
 |**INSERT INTO from SQL**|Avoids Spark RPC serialization limits on large DataFrames|
 |**Auto-optimize**|All Delta tables have `optimizeWrite` + `autoCompact` enabled|
@@ -192,8 +192,8 @@ Create two jobs with the following settings:
 
 ```
 DataPulse/
-├── notebook1\_optimization.py       # NB1: Optimization Analysis
-├── notebook2\_metadata.py           # NB2: Metadata Change \& Lineage
+├── notebook1_optimization.py       # NB1: Optimization Analysis
+├── notebook2_metadata.py           # NB2: Metadata Change & Lineage
 └── README.md
 ```
 
