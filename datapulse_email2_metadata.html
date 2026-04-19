@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataPulse — Metadata Changes & Lineage | 2026-04-20</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0f1a15; font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; }
+  .email-wrap { max-width: 980px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+
+  /* HEADER */
+  .header { background: linear-gradient(135deg, #1a4d3e 0%, #2a7a5f 100%); padding: 32px 36px; position: relative; overflow: hidden; }
+  .header::before { content: ''; position: absolute; top: -40px; right: -40px; width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.04); }
+  .header::after  { content: ''; position: absolute; bottom: -60px; right: 60px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,0.03); }
+  .header-icon  { font-size: 32px; margin-bottom: 8px; }
+  .header-title { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+  .header-sub   { color: #b2dfdb; font-size: 13px; margin-top: 8px; }
+  .header-sub span { background: rgba(255,255,255,0.12); padding: 2px 10px; border-radius: 20px; margin-right: 6px; font-size: 11px; }
+
+  /* DASHBOARD CARDS */
+  .cards-row { display: flex; gap: 10px; padding: 20px 20px 10px; flex-wrap: wrap; }
+  .card { flex: 1; min-width: 115px; border-radius: 10px; padding: 16px 12px; text-align: center; }
+  .card-value { font-size: 28px; font-weight: 800; color: #1a4d3e; line-height: 1; }
+  .card-label { font-size: 10px; color: #546e7a; margin-top: 5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* SECTION */
+  .section { padding: 20px 28px; border-top: 1px solid #f0f4f8; }
+  .section-title { font-size: 15px; font-weight: 700; color: #1a4d3e; border-bottom: 2px solid #1a4d3e; padding-bottom: 7px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+  /* TABLE */
+  table.data-tbl { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12px; }
+  table.data-tbl th { background: #eef1f5; color: #1a4d3e; padding: 9px 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #c8e6c9; white-space: nowrap; }
+  table.data-tbl td { padding: 8px 12px; border-bottom: 1px solid #e8edf2; vertical-align: top; }
+  table.data-tbl tr:nth-child(even) td { background: #f6f8fa; }
+  table.data-tbl tr:hover td { background: #e8f5e9; }
+
+  code.tbl { background: #f0f4f8; color: #1a4d3e; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-family: 'Cascadia Code', 'Consolas', monospace; }
+
+  /* BADGES */
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+  .badge-new      { background: #2e7d32; color: #fff; }
+  .badge-removed  { background: #b71c1c; color: #fff; }
+  .badge-added    { background: #1565c0; color: #fff; }
+  .badge-changed  { background: #e65100; color: #fff; }
+  .badge-naming   { background: #6a1b9a; color: #fff; }
+  .badge-critical { background: #b71c1c; color: #fff; }
+  .badge-high     { background: #d84315; color: #fff; }
+  .badge-medium   { background: #ef6c00; color: #fff; }
+  .badge-low      { background: #78909c; color: #fff; }
+  .badge-gray     { background: #607d8b; color: #fff; }
+
+  /* TAGS */
+  .nb-tag  { display: inline-block; background: #e3f2fd; color: #0d47a1; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin: 2px; }
+  .job-tag { display: inline-block; background: #fff8e1; color: #e65100; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; margin: 2px; }
+  .ds-tag  { font-family: 'Cascadia Code', 'Consolas', monospace; background: #f0f4f8; color: #1a4d3e; padding: 1px 6px; border-radius: 3px; font-size: 11px; margin: 2px; display: inline-block; }
+
+  /* LINEAGE DETAIL CARDS */
+  .lineage-card { border-radius: 8px; padding: 16px 18px; margin: 12px 0; background: #fff; }
+  .lineage-card-title { font-weight: 700; font-size: 13px; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .lineage-section-label { font-size: 11px; font-weight: 700; color: #546e7a; text-transform: uppercase; letter-spacing: 0.5px; margin: 8px 0 4px; }
+  .change-item { display: flex; align-items: flex-start; gap: 8px; padding: 5px 0; border-bottom: 1px solid #f5f5f5; font-size: 12px; }
+  .change-item:last-child { border-bottom: none; }
+  .change-detail { color: #546e7a; }
+
+  /* STALE */
+  .sev-age { background: #78909c; color: #fff; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 600; }
+
+  /* CODE BLOCK */
+  .code-preview { font-size: 10px; font-family: 'Cascadia Code', 'Consolas', monospace; color: #546e7a; background: #f8fafc; padding: 4px 8px; border-radius: 4px; white-space: pre-wrap; word-break: break-all; }
+
+  /* ACTIONS */
+  .action-list { list-style: none; padding: 0; }
+  .action-list li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f4f8; font-size: 13px; color: #37474f; }
+  .action-list li:last-child { border-bottom: none; }
+
+  /* NAMING */
+  .violation-label { font-size: 12px; font-weight: 700; color: #4a148c; margin: 14px 0 6px; padding-left: 4px; border-left: 3px solid #6a1b9a; }
+
+  /* FOOTER */
+  .footer { background: #eef1f5; padding: 14px 28px; text-align: center; font-size: 11px; color: #78909c; border-top: 1px solid #dde3ea; }
+  .footer strong { color: #1a4d3e; }
+
+  /* ARROWS */
+  .arrow { color: #e65100; font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="email-wrap">
+
+  <!-- ═══ HEADER ═══════════════════════════════════════════════════════════ -->
+  <div class="header">
+    <div class="header-icon">🧬</div>
+    <div class="header-title">DataPulse — Metadata Changes &amp; Lineage</div>
+    <div class="header-sub" style="margin-top:10px">
+      <span>📅 2026-04-20</span>
+      <span>🔄 Comparing against: 2026-04-19</span>
+      <span>📂 raw_schema, transform_schema</span>
+    </div>
+  </div>
+
+  <!-- ═══ DASHBOARD CARDS ══════════════════════════════════════════════════ -->
+  <div class="cards-row">
+    <div class="card" style="background:#e8f5e9"><div class="card-value">3</div><div class="card-label">New Tables/Views</div></div>
+    <div class="card" style="background:#ffebee"><div class="card-value">1</div><div class="card-label">Removed</div></div>
+    <div class="card" style="background:#e3f2fd"><div class="card-value">8</div><div class="card-label">Cols Added</div></div>
+    <div class="card" style="background:#fff8e1"><div class="card-value">5</div><div class="card-label">Cols Modified</div></div>
+    <div class="card" style="background:#f3e5f5"><div class="card-value">6</div><div class="card-label">Standards Issues</div></div>
+    <div class="card" style="background:#e0f2f1"><div class="card-value">24</div><div class="card-label">Affected Assets</div></div>
+    <div class="card" style="background:#fff3e0"><div class="card-value">4</div><div class="card-label">Stale Tables</div></div>
+  </div>
+
+  <!-- ═══ NEW TABLES / VIEWS ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">➕ New Tables / Views</div>
+    <table class="data-tbl">
+      <thead><tr><th>Status</th><th>Table / View</th><th>Type</th><th>Format</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-new">NEW</span></td>
+          <td><code class="tbl">raw_schema.mobile_app_events</code></td>
+          <td>MANAGED</td><td>DELTA</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-new">NEW</span></td>
+          <td><code class="tbl">transform_schema.ltv_predictions_view</code></td>
+          <td>VIEW</td><td>—</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-new">NEW</span></td>
+          <td><code class="tbl">raw_schema.partner_api_events</code></td>
+          <td>EXTERNAL</td><td>DELTA</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ REMOVED TABLES ════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">✖ Tables / Views Removed</div>
+    <table class="data-tbl">
+      <thead><tr><th>Status</th><th>Table / View</th><th>Type</th><th>Format</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-removed">REMOVED</span></td>
+          <td><code class="tbl">transform_schema.deprecated_sessions_view</code></td>
+          <td>VIEW</td><td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ COLUMNS ADDED ════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">➕ Columns Added</div>
+    <table class="data-tbl">
+      <thead><tr><th>Table</th><th>Column</th><th>Data Type</th><th>Nullable</th></tr></thead>
+      <tbody>
+        <tr><td><code class="tbl">raw_schema.customer_events</code></td><td><span class="badge badge-added">session_browser_version</span></td><td>STRING</td><td>YES</td></tr>
+        <tr><td><code class="tbl">raw_schema.customer_events</code></td><td><span class="badge badge-added">device_fingerprint</span></td><td>STRING</td><td>YES</td></tr>
+        <tr><td><code class="tbl">raw_schema.payment_transactions</code></td><td><span class="badge badge-added">fraud_score</span></td><td>DOUBLE</td><td>YES</td></tr>
+        <tr><td><code class="tbl">raw_schema.payment_transactions</code></td><td><span class="badge badge-added">risk_tier</span></td><td>STRING</td><td>YES</td></tr>
+        <tr><td><code class="tbl">transform_schema.plan_summary_view</code></td><td><span class="badge badge-added">mrr_usd</span></td><td>DECIMAL(18,4)</td><td>NO</td></tr>
+        <tr><td><code class="tbl">transform_schema.plan_summary_view</code></td><td><span class="badge badge-added">arr_usd</span></td><td>DECIMAL(18,4)</td><td>NO</td></tr>
+        <tr><td><code class="tbl">raw_schema.mobile_app_events</code></td><td><span class="badge badge-added">app_version</span></td><td>STRING</td><td>YES</td></tr>
+        <tr><td><code class="tbl">raw_schema.mobile_app_events</code></td><td><span class="badge badge-added">os_build</span></td><td>STRING</td><td>YES</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ COLUMN TYPE CHANGES ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">🔄 Column Type / Nullable Changes</div>
+    <table class="data-tbl">
+      <thead><tr><th>Table</th><th>Column</th><th>Type Change</th><th>Nullable Change</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code class="tbl">raw_schema.customer_events</code></td>
+          <td><code class="tbl">customer_score</code></td>
+          <td>INT <span class="arrow">→</span> <strong>DOUBLE</strong></td>
+          <td>YES → <strong>YES</strong></td>
+        </tr>
+        <tr>
+          <td><code class="tbl">raw_schema.payment_transactions</code></td>
+          <td><code class="tbl">txn_amount</code></td>
+          <td>FLOAT <span class="arrow">→</span> <strong>DECIMAL(18,4)</strong></td>
+          <td>YES → <strong>NO</strong></td>
+        </tr>
+        <tr>
+          <td><code class="tbl">transform_schema.plan_summary_view</code></td>
+          <td><code class="tbl">plan_status</code></td>
+          <td>STRING <span class="arrow">→</span> <strong>STRING</strong></td>
+          <td>YES → <strong>NO</strong></td>
+        </tr>
+        <tr>
+          <td><code class="tbl">raw_schema.support_tickets</code></td>
+          <td><code class="tbl">priority_level</code></td>
+          <td>INT <span class="arrow">→</span> <strong>STRING</strong></td>
+          <td>YES → <strong>YES</strong></td>
+        </tr>
+        <tr>
+          <td><code class="tbl">raw_schema.clickstream_log</code></td>
+          <td><code class="tbl">page_load_ms</code></td>
+          <td>INT <span class="arrow">→</span> <strong>BIGINT</strong></td>
+          <td>YES → <strong>YES</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ DATA LINEAGE — IMPACT ANALYSIS ═══════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">🔗 Data Lineage — Detailed Impact Analysis</div>
+
+    <!-- Summary table -->
+    <table class="data-tbl">
+      <thead>
+        <tr><th>Changed Table</th><th>Schema Changes</th><th>Downstream</th><th>Notebooks</th><th>Jobs</th><th>Risk</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="tbl">raw_schema.customer_events</code></td>
+          <td>COL ADDED × 2, TYPE CHANGE</td>
+          <td>7</td><td>4</td><td>3</td>
+          <td><span class="badge badge-critical">CRITICAL</span></td>
+        </tr>
+        <tr>
+          <td><code class="tbl">raw_schema.payment_transactions</code></td>
+          <td>COL ADDED × 2, TYPE CHANGE</td>
+          <td>5</td><td>3</td><td>2</td>
+          <td><span class="badge badge-critical">CRITICAL</span></td>
+        </tr>
+        <tr>
+          <td><code class="tbl">transform_schema.plan_summary_view</code></td>
+          <td>COL ADDED × 2, TYPE CHANGE</td>
+          <td>3</td><td>2</td><td>1</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code class="tbl">raw_schema.support_tickets</code></td>
+          <td>TYPE CHANGE</td>
+          <td>2</td><td>1</td><td>1</td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code class="tbl">raw_schema.clickstream_log</code></td>
+          <td>TYPE CHANGE</td>
+          <td>1</td><td>2</td><td>0</td>
+          <td><span class="badge badge-medium">MEDIUM</span></td>
+        </tr>
+        <tr>
+          <td><code class="tbl">raw_schema.mobile_app_events</code></td>
+          <td>NEW TABLE</td>
+          <td>0</td><td>0</td><td>0</td>
+          <td><span class="badge badge-low">LOW</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Detail card: customer_events CRITICAL -->
+    <div class="lineage-card" style="border: 2px solid #b71c1c;">
+      <div class="lineage-card-title">
+        <code class="tbl">raw_schema.customer_events</code>
+        <span class="badge badge-critical">CRITICAL</span>
+      </div>
+      <div class="lineage-section-label">What Changed</div>
+      <div class="change-item"><span>➕</span><span class="badge badge-added">COL ADDED</span><code class="tbl">session_browser_version</code> <span class="change-detail">— STRING | nullable=YES</span></div>
+      <div class="change-item"><span>➕</span><span class="badge badge-added">COL ADDED</span><code class="tbl">device_fingerprint</code> <span class="change-detail">— STRING | nullable=YES</span></div>
+      <div class="change-item"><span>🔄</span><span class="badge badge-changed">TYPE CHANGE</span><code class="tbl">customer_score</code> <span class="change-detail">— INT → DOUBLE | nullable: YES → YES</span></div>
+      <div class="lineage-section-label">Affected Assets</div>
+      <div style="font-size:12px;margin-top:4px">
+        <strong>Downstream Tables:</strong><br>
+        <span class="ds-tag">transform_schema.customer_360_view</span>
+        <span class="ds-tag">transform_schema.churn_features_view</span>
+        <span class="ds-tag">transform_schema.ltv_predictions_view</span>
+        <span class="ds-tag">raw_schema.session_activity</span>
+        <span class="ds-tag">transform_schema.revenue_daily_view</span>
+        <span class="ds-tag">transform_schema.plan_summary_view</span>
+        <span class="ds-tag">raw_schema.support_tickets</span>
+        <br><br>
+        <strong>Notebooks:</strong><br>
+        <span class="nb-tag">customer_360_builder</span>
+        <span class="nb-tag">churn_model_features</span>
+        <span class="nb-tag">ltv_scoring_pipeline</span>
+        <span class="nb-tag">revenue_daily_agg</span>
+        <br><br>
+        <strong>Jobs:</strong><br>
+        <span class="job-tag">ETL_Customer360_Merge</span>
+        <span class="job-tag">ML_Churn_Feature_Pipeline</span>
+        <span class="job-tag">Revenue_Aggregation_Daily</span>
+      </div>
+    </div>
+
+    <!-- Detail card: payment_transactions CRITICAL -->
+    <div class="lineage-card" style="border: 2px solid #b71c1c;">
+      <div class="lineage-card-title">
+        <code class="tbl">raw_schema.payment_transactions</code>
+        <span class="badge badge-critical">CRITICAL</span>
+      </div>
+      <div class="lineage-section-label">What Changed</div>
+      <div class="change-item"><span>➕</span><span class="badge badge-added">COL ADDED</span><code class="tbl">fraud_score</code> <span class="change-detail">— DOUBLE | nullable=YES</span></div>
+      <div class="change-item"><span>➕</span><span class="badge badge-added">COL ADDED</span><code class="tbl">risk_tier</code> <span class="change-detail">— STRING | nullable=YES</span></div>
+      <div class="change-item"><span>🔄</span><span class="badge badge-changed">TYPE CHANGE</span><code class="tbl">txn_amount</code> <span class="change-detail">— FLOAT → DECIMAL(18,4) | nullable: YES → NO (BREAKING)</span></div>
+      <div class="lineage-section-label">Affected Assets</div>
+      <div style="font-size:12px;margin-top:4px">
+        <strong>Downstream Tables:</strong><br>
+        <span class="ds-tag">transform_schema.revenue_daily_view</span>
+        <span class="ds-tag">transform_schema.plan_summary_view</span>
+        <span class="ds-tag">transform_schema.churn_features_view</span>
+        <span class="ds-tag">raw_schema.payment_reconciliation</span>
+        <span class="ds-tag">transform_schema.fraud_signals_view</span>
+        <br><br>
+        <strong>Notebooks:</strong><br>
+        <span class="nb-tag">payment_reconciliation_nb</span>
+        <span class="nb-tag">fraud_detection_scorer</span>
+        <span class="nb-tag">revenue_daily_agg</span>
+        <br><br>
+        <strong>Jobs:</strong><br>
+        <span class="job-tag">Payment_Reconciliation_Job</span>
+        <span class="job-tag">Revenue_Aggregation_Daily</span>
+      </div>
+    </div>
+
+    <!-- Detail card: plan_summary HIGH -->
+    <div class="lineage-card" style="border: 2px solid #d84315;">
+      <div class="lineage-card-title">
+        <code class="tbl">transform_schema.plan_summary_view</code>
+        <span class="badge badge-high">HIGH</span>
+      </div>
+      <div class="lineage-section-label">What Changed</div>
+      <div class="change-item"><span>➕</span><span class="badge badge-added">COL ADDED</span><code class="tbl">mrr_usd</code> <span class="change-detail">— DECIMAL(18,4) | nullable=NO</span></div>
+      <div class="change-item"><span>➕</span><span class="badge badge-added">COL ADDED</span><code class="tbl">arr_usd</code> <span class="change-detail">— DECIMAL(18,4) | nullable=NO</span></div>
+      <div class="change-item"><span>🔄</span><span class="badge badge-changed">TYPE CHANGE</span><code class="tbl">plan_status</code> <span class="change-detail">— nullable: YES → NO (BREAKING)</span></div>
+      <div class="lineage-section-label">Affected Assets</div>
+      <div style="font-size:12px;margin-top:4px">
+        <strong>Downstream Tables:</strong><br>
+        <span class="ds-tag">transform_schema.executive_kpi_view</span>
+        <span class="ds-tag">transform_schema.churn_features_view</span>
+        <span class="ds-tag">transform_schema.ltv_predictions_view</span>
+        <br><br>
+        <strong>Notebooks:</strong><br>
+        <span class="nb-tag">executive_dashboard_nb</span>
+        <span class="nb-tag">ltv_scoring_pipeline</span>
+        <br><br>
+        <strong>Jobs:</strong><br>
+        <span class="job-tag">ML_Churn_Feature_Pipeline</span>
+      </div>
+    </div>
+
+    <!-- Detail card: clickstream MEDIUM -->
+    <div class="lineage-card" style="border: 2px solid #ef6c00;">
+      <div class="lineage-card-title">
+        <code class="tbl">raw_schema.clickstream_log</code>
+        <span class="badge badge-medium">MEDIUM</span>
+      </div>
+      <div class="lineage-section-label">What Changed</div>
+      <div class="change-item"><span>🔄</span><span class="badge badge-changed">TYPE CHANGE</span><code class="tbl">page_load_ms</code> <span class="change-detail">— INT → BIGINT | nullable: YES → YES</span></div>
+      <div class="lineage-section-label">Affected Assets</div>
+      <div style="font-size:12px;margin-top:4px">
+        <strong>Downstream Tables:</strong><br>
+        <span class="ds-tag">transform_schema.session_performance_view</span>
+        <br><br>
+        <strong>Notebooks:</strong><br>
+        <span class="nb-tag">perf_analytics_nb</span>
+        <span class="nb-tag">Notebook #40821</span>
+      </div>
+    </div>
+
+    <!-- Recommended Actions -->
+    <div class="section-title" style="margin-top:20px">📋 Recommended Actions</div>
+    <ul class="action-list">
+      <li><span class="badge" style="background:#1a4d3e;color:#fff">1</span>Review and validate 3 removed columns — downstream consumers of support_tickets.priority_level may fail with type cast errors</li>
+      <li><span class="badge" style="background:#1a4d3e;color:#fff">2</span>Test txn_amount FLOAT→DECIMAL change across 5 downstream pipelines — nullability now enforced (BREAKING)</li>
+      <li><span class="badge" style="background:#1a4d3e;color:#fff">3</span>Update ETL_Customer360_Merge and ML_Churn_Feature_Pipeline for new customer_events columns</li>
+      <li><span class="badge" style="background:#1a4d3e;color:#fff">4</span>Notify 3 downstream table owners of raw_schema.customer_events changes (7 dependents)</li>
+      <li><span class="badge" style="background:#1a4d3e;color:#fff">5</span>Review 8 affected notebooks for schema compatibility — especially fraud_detection_scorer</li>
+      <li><span class="badge" style="background:#1a4d3e;color:#fff">6</span>Check 5 affected jobs for schema drift errors in next 3 runs after deployment</li>
+      <li><span class="badge" style="background:#1a4d3e;color:#fff">7</span>Fix 6 naming/governance violations — rename uppercase tables in raw_schema immediately</li>
+    </ul>
+  </div>
+
+  <!-- ═══ STALE DATA ════════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">🕐 Stale Data Tables</div>
+    <p style="font-size:12px;color:#546e7a;margin-bottom:12px">
+      Based on <strong>DESCRIBE HISTORY</strong> — actual data write operations only (WRITE, MERGE, UPDATE, etc.).
+      Views are excluded as they do not store data. Threshold: <strong>7 days</strong>.
+    </p>
+    <table class="data-tbl">
+      <thead>
+        <tr><th>Table</th><th>Format</th><th>Last Data Write</th><th>Last Operation</th><th>Rows Written</th><th>Age</th><th>Severity</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code class="tbl">raw_schema.legacy_product_codes</code></td>
+          <td>DELTA</td><td>2026-01-02 23:14 ET</td><td>WRITE</td><td>14,200</td>
+          <td><span class="sev-age">108d</span></td>
+          <td><span class="badge badge-critical">CRITICAL</span></td>
+        </tr>
+        <tr>
+          <td><code class="tbl">raw_schema.archived_sessions_2024</code></td>
+          <td>DELTA</td><td>2025-12-18 02:30 ET</td><td>MERGE</td><td>4,820,140</td>
+          <td><span class="sev-age">123d</span></td>
+          <td><span class="badge badge-critical">CRITICAL</span></td>
+        </tr>
+        <tr>
+          <td><code class="tbl">raw_schema.partner_api_events</code></td>
+          <td>DELTA</td><td>2026-03-20 14:10 ET</td><td>STREAMING UPDATE</td><td>—</td>
+          <td><span class="sev-age">31d</span></td>
+          <td><span class="badge badge-high">HIGH</span></td>
+        </tr>
+        <tr>
+          <td><code class="tbl">raw_schema.inventory_movements</code></td>
+          <td>DELTA</td><td>2026-04-06 01:42 ET</td><td>MERGE</td><td>882,300</td>
+          <td><span class="sev-age">14d</span></td>
+          <td><span class="badge badge-medium">MEDIUM</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ NAMING STANDARDS VIOLATIONS ══════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">⚠️ Naming Standards Violations</div>
+
+    <div class="violation-label">raw_schema — Bad Table Names</div>
+    <table class="data-tbl">
+      <thead><tr><th>Table Name</th><th>Issues</th></tr></thead>
+      <tbody>
+        <tr><td><code class="tbl">raw_schema.CustomerEvents_V2</code></td><td>uppercase letters</td></tr>
+        <tr><td><code class="tbl">raw_schema.Payment Transactions Backup</code></td><td>contains spaces</td></tr>
+      </tbody>
+    </table>
+
+    <div class="violation-label">raw_schema — Bad Column Names (top 50)</div>
+    <table class="data-tbl">
+      <thead><tr><th>Table</th><th>Column Name</th><th>Issues</th></tr></thead>
+      <tbody>
+        <tr><td><code class="tbl">raw_schema.customer_events</code></td><td><code class="tbl">CustomerID</code></td><td>uppercase letters</td></tr>
+        <tr><td><code class="tbl">raw_schema.customer_events</code></td><td><code class="tbl">Event Type</code></td><td>contains spaces</td></tr>
+        <tr><td><code class="tbl">raw_schema.support_tickets</code></td><td><code class="tbl">TicketPriority</code></td><td>uppercase letters</td></tr>
+      </tbody>
+    </table>
+
+    <div class="violation-label">transform_schema — Views Not Referencing publish_/raw_schema</div>
+    <table class="data-tbl">
+      <thead><tr><th>View Name</th><th>Definition Preview</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code class="tbl">transform_schema.executive_kpi_view</code></td>
+          <td><div class="code-preview">SELECT SUM(mrr_usd) AS total_mrr, COUNT(DISTINCT customer_id) AS customers FROM transform_schema.plan_summary_view WHERE plan_status = 'active'…</div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ FOOTER ════════════════════════════════════════════════════════════ -->
+  <div class="footer">
+    Generated by <strong>DataPulse</strong> on 2026-04-20 23:00 ET
+    &nbsp;|&nbsp; Schemas: raw_schema, transform_schema
+    &nbsp;|&nbsp; Schema Changes: 17
+    &nbsp;|&nbsp; Naming Violations: 6
+    &nbsp;|&nbsp; Stale Tables: 4
+  </div>
+
+</div>
+</body>
+</html>

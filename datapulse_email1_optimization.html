@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataPulse — Optimization Analysis | 2026-04-20</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0f1923; font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; }
+  .email-wrap { max-width: 980px; margin: 0 auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+
+  /* HEADER */
+  .header { background: linear-gradient(135deg, #1a3c5e 0%, #2c5f8a 100%); padding: 32px 36px; position: relative; overflow: hidden; }
+  .header::before { content: ''; position: absolute; top: -40px; right: -40px; width: 200px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.04); }
+  .header::after  { content: ''; position: absolute; bottom: -60px; right: 60px; width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,0.03); }
+  .header-icon { font-size: 32px; margin-bottom: 8px; }
+  .header-title { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.3px; }
+  .header-sub { color: #c8dce8; font-size: 13px; margin-top: 8px; }
+  .header-sub span { background: rgba(255,255,255,0.12); padding: 2px 10px; border-radius: 20px; margin-right: 6px; font-size: 11px; }
+
+  /* DASHBOARD CARDS */
+  .cards-row { display: flex; gap: 10px; padding: 20px 20px 10px; flex-wrap: wrap; }
+  .card { flex: 1; min-width: 140px; border-radius: 10px; padding: 18px 16px; text-align: center; }
+  .card-value { font-size: 32px; font-weight: 800; color: #1a3c5e; line-height: 1; }
+  .card-label { font-size: 11px; color: #546e7a; margin-top: 6px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* SECTION */
+  .section { padding: 20px 28px; border-top: 1px solid #f0f4f8; }
+  .section-title { font-size: 15px; font-weight: 700; color: #1a3c5e; border-bottom: 2px solid #1a3c5e; padding-bottom: 7px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+
+  /* TABLE */
+  table.data-tbl { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 12px; }
+  table.data-tbl th { background: #eef1f5; color: #1a3c5e; padding: 9px 12px; text-align: left; font-weight: 700; border-bottom: 2px solid #d0d7de; white-space: nowrap; }
+  table.data-tbl td { padding: 8px 12px; border-bottom: 1px solid #e8edf2; }
+  table.data-tbl tr:nth-child(even) td { background: #f6f8fa; }
+  table.data-tbl tr:hover td { background: #eef4ff; }
+  code.tbl { background: #f0f4f8; color: #1a3c5e; padding: 1px 6px; border-radius: 3px; font-size: 11px; font-family: 'Cascadia Code', 'Consolas', monospace; }
+
+  /* BADGES */
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: 11px; font-weight: 700; color: #fff; white-space: nowrap; }
+  .badge-critical { background: #b71c1c; }
+  .badge-high     { background: #d84315; }
+  .badge-medium   { background: #ef6c00; }
+  .badge-good     { background: #2e7d32; }
+  .badge-info     { background: #1565c0; }
+  .badge-gray     { background: #607d8b; }
+
+  /* CODE BLOCK */
+  .code-blk { background: #1e293b; color: #94d2bd; padding: 14px 18px; border-radius: 8px; font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 12px; overflow-x: auto; margin: 10px 0; line-height: 1.7; white-space: pre; }
+  .code-comment { color: #4a7a6a; }
+
+  /* FAILURE CARDS */
+  .fail-card { border-left: 4px solid #b71c1c; padding: 12px 16px; margin: 8px 0; background: #fff5f5; border-radius: 0 6px 6px 0; }
+  .fail-card-header { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .fail-card-name { font-weight: 700; font-size: 13px; color: #1a3c5e; }
+  .fail-meta { font-size: 11px; color: #777; }
+  .fail-err { font-size: 11px; color: #b71c1c; font-family: monospace; margin-top: 6px; white-space: pre-wrap; background: #fff0f0; padding: 6px 10px; border-radius: 4px; }
+  .fail-link { font-size: 11px; color: #1565c0; text-decoration: none; }
+
+  /* ACTIONS LIST */
+  .action-list { list-style: none; padding: 0; }
+  .action-list li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f4f8; font-size: 13px; color: #37474f; }
+  .action-list li:last-child { border-bottom: none; }
+
+  /* INFO BOX */
+  .info-box { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 10px 0; font-size: 13px; color: #1b5e20; }
+  .warn-box { background: #fff8e1; border-left: 4px solid #f9a825; padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 10px 0; font-size: 13px; }
+
+  /* FOOTER */
+  .footer { background: #eef1f5; padding: 14px 28px; text-align: center; font-size: 11px; color: #78909c; border-top: 1px solid #dde3ea; }
+  .footer strong { color: #1a3c5e; }
+
+  /* STEP LIST */
+  .step-list { padding-left: 18px; font-size: 12px; color: #37474f; line-height: 2; }
+
+  /* STALE SUB */
+  .sub-label { font-size: 12px; font-weight: 700; color: #37474f; margin: 12px 0 6px; }
+
+  /* DIAGNOSTIC */
+  .diag-label { font-size: 12px; font-weight: 700; color: #1a3c5e; margin: 10px 0 4px; }
+</style>
+</head>
+<body>
+<div class="email-wrap">
+
+  <!-- ═══ HEADER ═══════════════════════════════════════════════════════════ -->
+  <div class="header">
+    <div class="header-icon">🔍</div>
+    <div class="header-title">DataPulse — Optimization Analysis</div>
+    <div class="header-sub" style="margin-top:10px">
+      <span>📅 2026-04-20</span>
+      <span>🔁 Lookback from: 2026-04-19</span>
+      <span>🏢 source_catalog</span>
+    </div>
+  </div>
+
+  <!-- ═══ DASHBOARD CARDS ══════════════════════════════════════════════════ -->
+  <div class="cards-row">
+    <div class="card" style="background:#fff8e1">
+      <div class="card-value">14</div>
+      <div class="card-label">Small File Issues</div>
+    </div>
+    <div class="card" style="background:#e8eaf6">
+      <div class="card-value">9</div>
+      <div class="card-label">Missing Clustering</div>
+    </div>
+    <div class="card" style="background:#ffebee">
+      <div class="card-value">3</div>
+      <div class="card-label">Failing Jobs</div>
+    </div>
+    <div class="card" style="background:#e0f2f1">
+      <div class="card-value">7</div>
+      <div class="card-label">Period Failures</div>
+    </div>
+    <div class="card" style="background:#e8f5e9">
+      <div class="card-value">$841</div>
+      <div class="card-label">Est. Monthly Savings</div>
+    </div>
+  </div>
+
+  <!-- ═══ SMALL FILES ═══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">⚡ Small File Issues</div>
+    <table class="data-tbl">
+      <thead>
+        <tr>
+          <th>Table</th><th>Size MB</th><th>Files</th><th>Avg File MB</th><th>Severity</th><th>Expected Gain</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code class="tbl">raw_schema.customer_events</code></td><td>18,240</td><td>12,847</td><td>1.42</td><td><span class="badge badge-critical">CRITICAL</span></td><td>~78%</td></tr>
+        <tr><td><code class="tbl">raw_schema.clickstream_log</code></td><td>9,310</td><td>8,204</td><td>1.13</td><td><span class="badge badge-critical">CRITICAL</span></td><td>~75%</td></tr>
+        <tr><td><code class="tbl">raw_schema.session_activity</code></td><td>4,128</td><td>3,562</td><td>1.16</td><td><span class="badge badge-critical">CRITICAL</span></td><td>~72%</td></tr>
+        <tr><td><code class="tbl">transform_schema.plan_summary_view</code></td><td>6,890</td><td>1,340</td><td>5.14</td><td><span class="badge badge-high">HIGH</span></td><td>~55%</td></tr>
+        <tr><td><code class="tbl">raw_schema.payment_transactions</code></td><td>3,200</td><td>1,102</td><td>2.90</td><td><span class="badge badge-high">HIGH</span></td><td>~48%</td></tr>
+        <tr><td><code class="tbl">raw_schema.product_catalog</code></td><td>820</td><td>740</td><td>1.11</td><td><span class="badge badge-high">HIGH</span></td><td>~60%</td></tr>
+        <tr><td><code class="tbl">transform_schema.revenue_daily_view</code></td><td>2,400</td><td>620</td><td>3.87</td><td><span class="badge badge-medium">MEDIUM</span></td><td>~38%</td></tr>
+        <tr><td><code class="tbl">raw_schema.support_tickets</code></td><td>1,560</td><td>590</td><td>2.64</td><td><span class="badge badge-medium">MEDIUM</span></td><td>~35%</td></tr>
+        <tr><td><code class="tbl">transform_schema.churn_features_view</code></td><td>5,100</td><td>512</td><td>9.96</td><td><span class="badge badge-medium">MEDIUM</span></td><td>~28%</td></tr>
+        <tr><td><code class="tbl">raw_schema.inventory_movements</code></td><td>980</td><td>490</td><td>2.00</td><td><span class="badge badge-medium">MEDIUM</span></td><td>~32%</td></tr>
+      </tbody>
+    </table>
+    <div class="diag-label">OPTIMIZE Commands (top 10):</div>
+    <div class="code-blk"><span class="code-comment">-- Run during off-peak hours. Each OPTIMIZE rewrites small files into 1GB target file size.</span>
+OPTIMIZE source_catalog.raw_schema.customer_events;
+OPTIMIZE source_catalog.raw_schema.clickstream_log;
+OPTIMIZE source_catalog.raw_schema.session_activity;
+OPTIMIZE source_catalog.transform_schema.plan_summary_view;
+OPTIMIZE source_catalog.raw_schema.payment_transactions;
+OPTIMIZE source_catalog.raw_schema.product_catalog;
+OPTIMIZE source_catalog.transform_schema.revenue_daily_view;
+OPTIMIZE source_catalog.raw_schema.support_tickets;
+OPTIMIZE source_catalog.transform_schema.churn_features_view;
+OPTIMIZE source_catalog.raw_schema.inventory_movements;</div>
+  </div>
+
+  <!-- ═══ MISSING CLUSTERING ════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">🔗 Missing Liquid Clustering</div>
+    <div class="info-box">
+      Liquid clustering replaces traditional partitioning and file ordering strategies.
+      Expected query performance improvement: <strong>40–70%</strong> on selective filters.
+      No partition pruning required — clustering is adaptive and auto-tuned over time.
+    </div>
+    <table class="data-tbl">
+      <thead>
+        <tr>
+          <th>Table</th><th>Size MB</th><th>Files</th><th>Recommended Clustering Cols</th><th>Current Partitions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td><code class="tbl">raw_schema.customer_events</code></td><td>18,240</td><td>12,847</td><td><code class="tbl">created_date, customer_number, client_id</code></td><td>[]</td></tr>
+        <tr><td><code class="tbl">raw_schema.clickstream_log</code></td><td>9,310</td><td>8,204</td><td><code class="tbl">_date, _id, account</code></td><td>[]</td></tr>
+        <tr><td><code class="tbl">raw_schema.session_activity</code></td><td>4,128</td><td>3,562</td><td><code class="tbl">conversation_start, customer_number</code></td><td>[session_date]</td></tr>
+        <tr><td><code class="tbl">transform_schema.plan_summary_view</code></td><td>6,890</td><td>1,340</td><td><code class="tbl">summary_date, plan_number, rs_plan_number</code></td><td>[]</td></tr>
+        <tr><td><code class="tbl">raw_schema.payment_transactions</code></td><td>3,200</td><td>1,102</td><td><code class="tbl">history_date, customer_number, client_id</code></td><td>[txn_year]</td></tr>
+        <tr><td><code class="tbl">raw_schema.product_catalog</code></td><td>820</td><td>740</td><td><code class="tbl">created, _key</code></td><td>[]</td></tr>
+        <tr><td><code class="tbl">transform_schema.churn_features_view</code></td><td>5,100</td><td>512</td><td><code class="tbl">calendar_date, cust_, plan_number</code></td><td>[]</td></tr>
+        <tr><td><code class="tbl">raw_schema.inventory_movements</code></td><td>980</td><td>490</td><td><code class="tbl">_tmst, _id, _number</code></td><td>[]</td></tr>
+      </tbody>
+    </table>
+    <div class="diag-label">ALTER TABLE + OPTIMIZE Commands (top 8):</div>
+    <div class="code-blk"><span class="code-comment">-- Step 1: Set clustering key. Step 2: OPTIMIZE triggers the initial cluster pass.</span>
+ALTER TABLE source_catalog.raw_schema.customer_events CLUSTER BY (created_date, customer_number, client_id);
+OPTIMIZE source_catalog.raw_schema.customer_events;
+
+ALTER TABLE source_catalog.raw_schema.clickstream_log CLUSTER BY (_date, _id, account);
+OPTIMIZE source_catalog.raw_schema.clickstream_log;
+
+ALTER TABLE source_catalog.transform_schema.plan_summary_view CLUSTER BY (summary_date, plan_number, rs_plan_number);
+OPTIMIZE source_catalog.transform_schema.plan_summary_view;
+
+ALTER TABLE source_catalog.raw_schema.payment_transactions CLUSTER BY (history_date, customer_number, client_id);
+OPTIMIZE source_catalog.raw_schema.payment_transactions;</div>
+  </div>
+
+  <!-- ═══ LONG RUNNING JOBS ═════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">⏱️ Long-Running Jobs</div>
+    <p style="font-size:12px;color:#546e7a;margin-bottom:12px">
+      Estimated monthly compute cost: <strong style="color:#1a3c5e">$2,810</strong>
+      &nbsp;|&nbsp; Potential savings with optimisation: <strong style="color:#2e7d32">$841</strong>
+    </p>
+    <table class="data-tbl">
+      <thead>
+        <tr><th>Job</th><th>Avg min</th><th>Max min</th><th>Schedule</th><th>Fail Rate</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>ETL_Customer360_Merge</strong></td><td>87.4</td><td>142.0</td><td>Daily at 10:00 PM</td><td>4.0%</td></tr>
+        <tr><td><strong>ML_Churn_Feature_Pipeline</strong></td><td>64.2</td><td>98.5</td><td>Mon-Fri at 9:00 PM</td><td>8.0%</td></tr>
+        <tr><td><strong>Revenue_Aggregation_Daily</strong></td><td>43.7</td><td>71.2</td><td>Daily at 11:30 PM</td><td>0.0%</td></tr>
+        <tr><td><strong>Inventory_Snapshot_Sync</strong></td><td>38.1</td><td>62.8</td><td>Daily at 1:00 AM</td><td>12.0%</td></tr>
+        <tr><td><strong>Payment_Reconciliation_Job</strong></td><td>29.6</td><td>54.3</td><td>Daily at 2:00 AM</td><td>0.0%</td></tr>
+      </tbody>
+    </table>
+    <ol class="step-list">
+      <li>Review query plans with EXPLAIN EXTENDED to identify shuffle-heavy stages</li>
+      <li>Run OPTIMIZE on upstream source tables (customer_events, clickstream_log)</li>
+      <li>Add liquid clustering on high-cardinality join keys (customer_id, plan_number)</li>
+      <li>Tune cluster size and auto-scaling min/max thresholds per job profile</li>
+      <li>Cache intermediate DataFrames where reused across multiple transformations</li>
+      <li>Reduce shuffle volume — apply filters before joins, not after</li>
+    </ol>
+    <div class="diag-label">🔎 ETL_Customer360_Merge</div>
+    <div class="code-blk"><span class="code-comment">-- Diagnostic: Inspect physical plan for merge key bottlenecks</span>
+EXPLAIN EXTENDED
+SELECT * FROM source_catalog.raw_schema.customer_events
+WHERE  created_date >= DATE_SUB(CURRENT_DATE(), 7);
+
+<span class="code-comment">-- Job URL: https://your-workspace.azuredatabricks.net/#job/1042/runs</span></div>
+    <div class="diag-label">🔎 ML_Churn_Feature_Pipeline</div>
+    <div class="code-blk"><span class="code-comment">-- Diagnostic: Check skew on customer_number join key</span>
+EXPLAIN EXTENDED
+SELECT * FROM source_catalog.transform_schema.churn_features_view
+WHERE  calendar_date >= DATE_SUB(CURRENT_DATE(), 30);
+
+<span class="code-comment">-- Job URL: https://your-workspace.azuredatabricks.net/#job/1078/runs</span></div>
+  </div>
+
+  <!-- ═══ FREQUENTLY FAILING JOBS ══════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">❌ Frequently Failing Jobs</div>
+    <table class="data-tbl">
+      <thead>
+        <tr><th>Job</th><th>Fail Rate</th><th>Failed/Total</th><th>Avg min</th><th>Schedule</th><th>Last Run</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>Clickstream_Ingestion_Stream</strong></td><td><strong style="color:#b71c1c">44.0%</strong></td><td>11/25</td><td>18.3</td><td>Mon-Fri at 6:00 AM</td><td>2026-04-20 06:14 ET</td></tr>
+        <tr><td><strong>External_API_Pull_Partners</strong></td><td><strong style="color:#d84315">32.0%</strong></td><td>8/25</td><td>12.7</td><td>Daily at 3:00 AM</td><td>2026-04-20 03:08 ET</td></tr>
+        <tr><td><strong>Inventory_Snapshot_Sync</strong></td><td><strong style="color:#ef6c00">24.0%</strong></td><td>6/25</td><td>38.1</td><td>Daily at 1:00 AM</td><td>2026-04-20 01:42 ET</td></tr>
+      </tbody>
+    </table>
+    <ol class="step-list">
+      <li>Review driver logs and event timeline for root-cause error patterns</li>
+      <li>Verify upstream data pipeline availability and source schema stability</li>
+      <li>Check cluster library versions and Databricks runtime compatibility</li>
+      <li>Inspect for schema drift on source tables with DESCRIBE HISTORY</li>
+      <li>Add retry policies: maxRetries: 2, retryOnTimeout: true</li>
+      <li>Configure Databricks alerting for consecutive failure thresholds</li>
+    </ol>
+    <div class="diag-label">🔎 Clickstream_Ingestion_Stream — Retry Policy Snippet</div>
+    <div class="code-blk"><span class="code-comment"># Add to job settings JSON (Databricks Jobs API / Terraform)</span>
+"max_retries": 2,
+"retry_on_timeout": true,
+"min_retry_interval_millis": 60000,
+
+<span class="code-comment">-- Lookup tables touched by this job:</span>
+SHOW TABLES IN source_catalog.raw_schema;</div>
+  </div>
+
+  <!-- ═══ PERIOD FAILURES ═══════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">🚨 Period Failures (since 2026-04-19)</div>
+
+    <div class="fail-card">
+      <div class="fail-card-header">
+        <span class="fail-card-name">Clickstream_Ingestion_Stream</span>
+        <span class="fail-meta">2026-04-20 06:14 ET</span>
+        <span class="fail-meta">⏱ 4.2 min</span>
+        <a href="#" class="fail-link">Run #8841092</a>
+      </div>
+      <div class="fail-err">AnalysisException: Column 'session_browser_version' does not exist in 'raw_schema.clickstream_log'. Available columns: [session_id, user_id, event_type, ...]</div>
+    </div>
+
+    <div class="fail-card">
+      <div class="fail-card-header">
+        <span class="fail-card-name">External_API_Pull_Partners</span>
+        <span class="fail-meta">2026-04-20 03:08 ET</span>
+        <span class="fail-meta">⏱ 7.8 min</span>
+        <a href="#" class="fail-link">Run #8840887</a>
+      </div>
+      <div class="fail-err">requests.exceptions.ConnectionError: HTTPSConnectionPool(host='api.partner-data.io', port=443): Max retries exceeded. SSL handshake timed out after 30s.</div>
+    </div>
+
+    <div class="fail-card">
+      <div class="fail-card-header">
+        <span class="fail-card-name">Clickstream_Ingestion_Stream</span>
+        <span class="fail-meta">2026-04-19 18:14 ET</span>
+        <span class="fail-meta">⏱ 3.9 min</span>
+        <a href="#" class="fail-link">Run #8840112</a>
+      </div>
+      <div class="fail-err">AnalysisException: Column 'session_browser_version' does not exist in 'raw_schema.clickstream_log'. Schema drift detected — producer added new column not yet in target schema.</div>
+    </div>
+
+    <div class="fail-card">
+      <div class="fail-card-header">
+        <span class="fail-card-name">Inventory_Snapshot_Sync</span>
+        <span class="fail-meta">2026-04-19 01:54 ET</span>
+        <span class="fail-meta">⏱ 62.8 min</span>
+        <a href="#" class="fail-link">Run #8839004</a>
+      </div>
+      <div class="fail-err">SparkException: Job aborted due to stage failure. Container killed by YARN for exceeding memory limits. Executor OOM on partition with 14.2M rows. Consider repartition or salting on customer_number.</div>
+    </div>
+
+    <ol class="step-list" style="margin-top:10px">
+      <li>Check cluster event log for OOM, spot-instance preemption, or executor loss</li>
+      <li>Confirm source table schemas have not drifted (DESCRIBE HISTORY)</li>
+      <li>Validate network connectivity and SSL certificate validity for external APIs</li>
+      <li>Review concurrent job scheduling for cluster resource contention at 6 AM window</li>
+      <li>Enable Databricks Enhanced Monitoring for proactive anomaly alerts</li>
+    </ol>
+  </div>
+
+  <!-- ═══ STALE ASSETS ══════════════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">🕐 Stale Assets (>60 days)</div>
+    <div class="sub-label">Tables</div>
+    <table class="data-tbl">
+      <thead><tr><th>Table</th><th>Size MB</th><th>Last Altered</th></tr></thead>
+      <tbody>
+        <tr><td><code class="tbl">raw_schema.legacy_product_codes</code></td><td>140</td><td>2026-01-03</td></tr>
+        <tr><td><code class="tbl">raw_schema.archived_sessions_2024</code></td><td>8,420</td><td>2025-12-18</td></tr>
+        <tr><td><code class="tbl">transform_schema.deprecated_kpi_view</code></td><td>320</td><td>2025-11-30</td></tr>
+      </tbody>
+    </table>
+    <div class="sub-label">Jobs</div>
+    <table class="data-tbl">
+      <thead><tr><th>Job</th><th>Schedule</th><th>Last Run</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Legacy_CRM_Export</strong></td><td>Daily at 4:00 AM</td><td>Never</td></tr>
+        <tr><td><strong>Archive_Cleanup_Weekly</strong></td><td>Sun at 2:00 AM</td><td>2025-11-10 02:04 ET</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ═══ RECOMMENDED ACTIONS ═══════════════════════════════════════════════ -->
+  <div class="section">
+    <div class="section-title">📋 Recommended Actions</div>
+    <ul class="action-list">
+      <li><span class="badge badge-critical">1</span> Run OPTIMIZE on 14 small-file tables — customer_events and clickstream_log are CRITICAL (12k+ files)</li>
+      <li><span class="badge badge-critical">2</span> Fix Clickstream_Ingestion_Stream schema drift immediately — failing 44% of runs</li>
+      <li><span class="badge" style="background:#d84315">3</span> Add liquid clustering to 9 large unclustered tables — estimated 40-70% query improvement</li>
+      <li><span class="badge" style="background:#d84315">4</span> Tune ETL_Customer360_Merge and ML_Churn_Feature_Pipeline — 87 and 64 min avg runtimes</li>
+      <li><span class="badge badge-medium">5</span> Enable Unity Catalog predictive optimization for auto-OPTIMIZE scheduling</li>
+      <li><span class="badge badge-medium">6</span> Archive or drop 3 stale tables — legacy_product_codes, archived_sessions_2024</li>
+      <li><span class="badge badge-good">7</span> Stagger ETL_Customer360_Merge and Clickstream jobs — both compete for cluster at 10 PM</li>
+      <li><span class="badge badge-good">8</span> Schedule weekly VACUUM RETAIN 168 HOURS on high-churn Delta tables</li>
+    </ul>
+  </div>
+
+  <!-- ═══ FOOTER ════════════════════════════════════════════════════════════ -->
+  <div class="footer">
+    Generated by <strong>DataPulse</strong> on 2026-04-20 23:00 ET
+    &nbsp;|&nbsp; Tables: 84 &nbsp;|&nbsp; Views: 31 &nbsp;|&nbsp; Jobs: 47
+    &nbsp;|&nbsp; Issues detected: 26 &nbsp;|&nbsp; Est. monthly cost: $2,810
+  </div>
+
+</div>
+</body>
+</html>
